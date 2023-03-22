@@ -3,10 +3,20 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
+	"strings"
 )
 
-const testFile = "/Users/andrewwillette/git/leetcode-practice/go-leetcode/canplaceflowers/canplaceflowers_test.go"
+func main() {
+	file := getTestFile()
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic("failed to read file: " + file)
+	}
+	fmt.Printf("%v\n", string(data))
+}
+
 const testTemplate = `
 func Test<functionNameTest>(t *testing.T) {
 	var cases = []struct {
@@ -24,17 +34,20 @@ func Test<functionNameTest>(t *testing.T) {
 }
 `
 
-func main() {
-	file := testFile
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		panic("failed to read file: " + file)
-	}
-	fmt.Printf("%v\n", string(data))
-}
-
 func getFuncName(file []byte) string {
 	r := regexp.MustCompile(`func \w*`)
-	fmt.Printf("%#v\n", r.FindStringSubmatch(string(file)))
+	funcWithSpace := strings.TrimLeft(r.FindStringSubmatch(string(file))[0], "func")
+	return strings.TrimLeft(funcWithSpace, " ")
+}
+
+func getTestFile() string {
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return dirname + "/git/leetcode-practice/go-leetcode/canplaceflowers/canplaceflowers_test.go"
+}
+
+func getTestFunctionAsString(funcName string, returnType string, funcParams map[string]string) string {
 	return ""
 }
