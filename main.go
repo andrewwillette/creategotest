@@ -17,7 +17,13 @@ func main() {
 	if err != nil {
 		panic("failed to read file: " + file)
 	}
-	fmt.Printf("%v\n", string(data))
+	funcToTest := FuncToTest{function: string(data)}
+	funcName := funcToTest.getFuncName()
+	returnType := funcToTest.getReturnType()
+	funcParams := funcToTest.getFuncParams()
+	template := TestTemplate{template: testTemplate}
+	result := template.getTestFunctionAsString(funcName, returnType, funcParams)
+	fmt.Printf("%v\n", result)
 }
 
 func getTestFile() string {
@@ -60,14 +66,34 @@ type FuncToTest struct {
 	function string
 }
 
+type FuncParam struct {
+	paramName string
+	paramType string
+}
+
 func (funcToTest *FuncToTest) getFuncName() string {
 	r := regexp.MustCompile(`func \w*`)
 	funcWithSpace := strings.TrimLeft(r.FindStringSubmatch(funcToTest.function)[0], "func")
 	return strings.TrimLeft(funcWithSpace, " ")
 }
 
-func (funcToTest *FuncToTest) getFuncParams() map[string]string {
-	funcParams := make(map[string]string)
+func (funcToTest *FuncToTest) getFuncParams() []FuncParam {
+	r := regexp.MustCompile(`\(.*\)`)
+	returnVal := r.FindStringSubmatch(funcToTest.function)[0]
+	returnVal = strings.TrimLeft(returnVal, "(")
+	returnVal = strings.TrimRight(returnVal, ")")
+	params := strings.Split(returnVal, ",")
+	funcParams := []FuncParam{}
+	for _, v := range params {
+		v = strings.Trim(v, " ")
+		paramNameVal := strings.Split(v, " ")
+		funcParams = append(funcParams,
+			FuncParam{
+				paramName: paramNameVal[0],
+				paramType: paramNameVal[1],
+			},
+		)
+	}
 	return funcParams
 }
 
@@ -83,7 +109,7 @@ type TestTemplate struct {
 	template string
 }
 
-func (template *TestTemplate) getTestFunctionAsString(funcName string, returnType string, funcParams map[string]string) string {
+func (template *TestTemplate) getTestFunctionAsString(funcName string, returnType string, funcParams []FuncParam) string {
 	template.insertTestFunctionSplint(funcName)
 	template.insertFunctionSplint(funcName)
 	template.insertParamsSplint(funcParams)
@@ -104,14 +130,16 @@ func (template *TestTemplate) insertFunctionSplint(funcName string) {
 	template.template = res
 }
 
-func (template *TestTemplate) insertCaseSplint(funcParams map[string]string) {
+func (template *TestTemplate) insertCaseSplint(funcParams []FuncParam) {
 	var sb strings.Builder
 	cnt := 0
-	for k, v := range funcParams {
-		if cnt < len(funcParams)-1 {
-			sb.WriteString(k + " " + v + "\n")
+	for _, v := range funcParams {
+		if cnt == 0 {
+			sb.WriteString(v.paramName + " " + v.paramType + "\n")
+		} else if cnt < len(funcParams)-1 {
+			sb.WriteString("\t\t" + v.paramName + " " + v.paramType + "\n")
 		} else {
-			sb.WriteString(k + " " + v)
+			sb.WriteString("\t\t" + v.paramName + " " + v.paramType)
 		}
 		cnt++
 	}
@@ -128,15 +156,15 @@ func (template *TestTemplate) insertExpectedSplint(returnType string) {
 	template.template = res
 }
 
-func (template *TestTemplate) insertParamsSplint(params map[string]string) {
+func (template *TestTemplate) insertParamsSplint(params []FuncParam) {
 	m := regexp.MustCompile(paramsSplint)
 	var sb strings.Builder
 	cnt := 0
-	for k := range params {
+	for _, v := range params {
 		if cnt < len(params)-1 {
-			sb.WriteString("c." + k + ", ")
+			sb.WriteString("c." + v.paramName + ", ")
 		} else {
-			sb.WriteString("c." + k)
+			sb.WriteString("c." + v.paramName)
 		}
 		cnt++
 	}

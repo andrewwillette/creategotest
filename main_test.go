@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,7 +15,6 @@ func canPlaceFlowers(flowerbed []int, n int) bool {
 `
 
 var (
-	template   = TestTemplate{template: testTemplate}
 	funcToTest = FuncToTest{function: exampleGoFile}
 )
 
@@ -32,14 +30,25 @@ func TestGetReturnType(t *testing.T) {
 	require.Equal(t, "bool", returnType)
 }
 
+func TestGetFuncParams(t *testing.T) {
+	funcToTest := FuncToTest{function: exampleGoFile}
+	funcParams := funcToTest.getFuncParams()
+	expected := []FuncParam{
+		{paramName: "flowerbed", paramType: "[]int"},
+		{paramName: "n", paramType: "int"},
+	}
+	require.Equal(t, expected, funcParams)
+}
+
 func TestGetTestFile(t *testing.T) {
 	getTestFile()
 }
 
 func TestGetTestFunctionAsString(t *testing.T) {
-	funcParams := map[string]string{
-		"flowerbed": "[]int",
-		"n":         "int",
+	template := TestTemplate{template: testTemplate}
+	funcParams := []FuncParam{
+		{paramName: "flowerbed", paramType: "[]int"},
+		{paramName: "n", paramType: "int"},
 	}
 	result := template.getTestFunctionAsString("canPlaceFlowers", "bool", funcParams)
 	require.Contains(t, result, "TestCanPlaceFlowers(t *testing.T)")
@@ -50,33 +59,38 @@ func TestGetTestFunctionAsString(t *testing.T) {
 }
 
 func TestInsertTestFunctionSplint(t *testing.T) {
+	template := TestTemplate{template: testTemplate}
 	template.insertTestFunctionSplint("canPlaceFlowers")
 	require.Contains(t, template.template, "TestCanPlaceFlowers(t *testing.T)")
 }
 
 func TestInsertFunctionSplint(t *testing.T) {
+	template := TestTemplate{template: testTemplate}
 	template.insertFunctionSplint("canPlaceFlowers")
 	require.Contains(t, template.template, "canPlaceFlowers(")
 }
 
 func TestInsertCaseSplint(t *testing.T) {
-	funcParams := map[string]string{
-		"flowerbed": "[]int",
-		"n":         "int",
+	template := TestTemplate{template: testTemplate}
+	funcParams := []FuncParam{
+		{paramName: "flowerbed", paramType: "[]int"},
+		{paramName: "n", paramType: "int"},
 	}
 	template.insertCaseSplint(funcParams)
 	require.Contains(t, template.template, "flowerbed []int\nn int")
 }
 
 func TestInsertExpectedSplint(t *testing.T) {
+	template := TestTemplate{template: testTemplate}
 	template.insertExpectedSplint("int")
 	require.Contains(t, template.template, "expected int")
 }
 
 func TestInsertParamsSplint(t *testing.T) {
-	funcParams := map[string]string{
-		"flowerbed": "[]int",
-		"n":         "int",
+	template := TestTemplate{template: testTemplate}
+	funcParams := []FuncParam{
+		{paramName: "flowerbed", paramType: "[]int"},
+		{paramName: "n", paramType: "int"},
 	}
 	template.insertParamsSplint(funcParams)
 	require.Contains(t, template.template, "(c.flowerbed, c.n)")
