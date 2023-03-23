@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -12,7 +11,12 @@ import (
 )
 
 func main() {
-	file := getTestFile()
+	var file string
+	if len(os.Args) > 1 {
+		file = os.Args[1]
+	} else {
+		file = getTestFile()
+	}
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		panic("failed to read file: " + file)
@@ -23,15 +27,20 @@ func main() {
 	funcParams := funcToTest.getFuncParams()
 	template := TestTemplate{template: testTemplate}
 	result := template.getTestFunctionAsString(funcName, returnType, funcParams)
-	fmt.Printf("%v\n", result)
+	appendToFile(file, result)
 }
 
-func getTestFile() string {
-	dirname, err := os.UserHomeDir()
+func appendToFile(filepath, toAppend string) error {
+	f, err := os.OpenFile(filepath,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
 	}
-	return dirname + "/git/leetcode-practice/go-leetcode/canplaceflowers/canplaceflowers_test.go"
+	defer f.Close()
+	if _, err := f.WriteString(toAppend); err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 var (
@@ -170,4 +179,13 @@ func (template *TestTemplate) insertParamsSplint(params []FuncParam) {
 	}
 	res := m.ReplaceAllString(template.template, sb.String())
 	template.template = res
+}
+
+// getTestFile used for testing
+func getTestFile() string {
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return dirname + "/git/leetcode-practice/go-leetcode/canplaceflowers/canplaceflowers_test.go"
 }
