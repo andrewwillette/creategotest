@@ -11,21 +11,14 @@ import (
 )
 
 func main() {
-	var file string
-	if len(os.Args) > 1 {
-		file = os.Args[1]
-	} else {
-		file = getTestFile()
-	}
+	file := getFileToAppend()
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		panic("failed to read file: " + file)
 	}
 	funcToTest := FuncToTest{function: string(data)}
-	funcName := funcToTest.getFuncName()
-	returnType := funcToTest.getReturnType()
-	funcParams := funcToTest.getFuncParams()
 	template := TestTemplate{template: testTemplate}
+	funcName, returnType, funcParams := funcToTest.getTemplateValues()
 	result := template.getTestFunctionAsString(funcName, returnType, funcParams)
 	appendToFile(file, result)
 }
@@ -78,6 +71,13 @@ type FuncToTest struct {
 type FuncParam struct {
 	paramName string
 	paramType string
+}
+
+func (funcToTest *FuncToTest) getTemplateValues() (string, string, []FuncParam) {
+	funcName := funcToTest.getFuncName()
+	returnType := funcToTest.getReturnType()
+	funcParams := funcToTest.getFuncParams()
+	return funcName, returnType, funcParams
 }
 
 func (funcToTest *FuncToTest) getFuncName() string {
@@ -188,4 +188,16 @@ func getTestFile() string {
 		panic(err)
 	}
 	return dirname + "/git/leetcode-practice/go-leetcode/canplaceflowers/canplaceflowers_test.go"
+}
+
+// getFileToAppend returns the file to append to, either a CLI provided absolute path
+// or a testing path used during development
+func getFileToAppend() string {
+	var file string
+	if len(os.Args) > 1 {
+		file = os.Args[1]
+	} else {
+		file = getTestFile()
+	}
+	return file
 }
