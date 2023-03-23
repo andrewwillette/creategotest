@@ -10,6 +10,31 @@ import (
 	"golang.org/x/text/language"
 )
 
+const (
+	testTemplate = `
+func Test<testFunctionSplint>(t *testing.T) {
+	var cases = []struct {
+		<caseSplint>
+		<expectedSplint>
+	}{
+		{
+		},
+	}
+	for _, c := range cases {
+		t.Run(fmt.Sprintf(""), func(t *testing.T) {
+			result := <functionSplint>(<paramsSplint>)
+			require.Equal(t, c.expected, result)
+		})
+	}
+}
+`
+	testFuncSplint = "<testFunctionSplint>"
+	funcSplint     = "<functionSplint>"
+	paramsSplint   = "<paramsSplint>"
+	caseSplint     = "<caseSplint>"
+	expectedSplint = "<expectedSplint>"
+)
+
 func main() {
 	file := getFileToAppend()
 	data, err := ioutil.ReadFile(file)
@@ -35,34 +60,6 @@ func appendToFile(filepath, toAppend string) error {
 	}
 	return nil
 }
-
-var (
-	testTemplate = `
-func Test<testFunctionSplint>(t *testing.T) {
-	var cases = []struct {
-		<caseSplint>
-		<expectedSplint>
-	}{
-		{
-		},
-	}
-	for _, c := range cases {
-		t.Run(fmt.Sprintf(""), func(t *testing.T) {
-			result := <functionSplint>(<paramsSplint>)
-			require.Equal(t, c.expected, result)
-		})
-	}
-}
-`
-)
-
-const (
-	testFuncSplint = "<testFunctionSplint>"
-	funcSplint     = "<functionSplint>"
-	paramsSplint   = "<paramsSplint>"
-	caseSplint     = "<caseSplint>"
-	expectedSplint = "<expectedSplint>"
-)
 
 type FuncToTest struct {
 	function string
