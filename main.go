@@ -41,8 +41,8 @@ func main() {
 	if err != nil {
 		panic("failed to read file: " + file)
 	}
-	funcToTest := FuncToTest{function: string(data)}
-	template := TestTemplate{template: testTemplate}
+	funcToTest := FuncToTest(string(data))
+	template := TestTemplate(testTemplate)
 	funcName, returnType, funcParams := funcToTest.getTemplateValues()
 	result := template.getTestFunctionAsString(funcName, returnType, funcParams)
 	appendToFile(file, result)
@@ -61,9 +61,7 @@ func appendToFile(filepath, toAppend string) error {
 	return nil
 }
 
-type FuncToTest struct {
-	function string
-}
+type FuncToTest string
 
 type FuncParam struct {
 	paramName string
@@ -79,13 +77,13 @@ func (funcToTest *FuncToTest) getTemplateValues() (string, string, []FuncParam) 
 
 func (funcToTest *FuncToTest) getFuncName() string {
 	r := regexp.MustCompile(`func \w*`)
-	funcWithSpace := strings.TrimLeft(r.FindStringSubmatch(funcToTest.function)[0], "func")
+	funcWithSpace := strings.TrimLeft(r.FindStringSubmatch(string(*funcToTest))[0], "func")
 	return strings.TrimLeft(funcWithSpace, " ")
 }
 
 func (funcToTest *FuncToTest) getFuncParams() []FuncParam {
 	r := regexp.MustCompile(`\(.*\)`)
-	returnVal := r.FindStringSubmatch(funcToTest.function)[0]
+	returnVal := r.FindStringSubmatch(string(*funcToTest))[0]
 	returnVal = strings.TrimLeft(returnVal, "(")
 	returnVal = strings.TrimRight(returnVal, ")")
 	params := strings.Split(returnVal, ",")
@@ -105,15 +103,13 @@ func (funcToTest *FuncToTest) getFuncParams() []FuncParam {
 
 func (funcToTest *FuncToTest) getReturnType() string {
 	r := regexp.MustCompile(`\) \w* {`)
-	returnVal := r.FindStringSubmatch(funcToTest.function)[0]
+	returnVal := r.FindStringSubmatch(string(*funcToTest))[0]
 	returnVal = strings.TrimLeft(returnVal, ") ")
 	returnVal = strings.TrimRight(returnVal, " {")
 	return returnVal
 }
 
-type TestTemplate struct {
-	template string
-}
+type TestTemplate string
 
 func (template *TestTemplate) getTestFunctionAsString(funcName string, returnType string, funcParams []FuncParam) string {
 	template.insertTestFunctionSplint(funcName)
@@ -121,19 +117,19 @@ func (template *TestTemplate) getTestFunctionAsString(funcName string, returnTyp
 	template.insertParamsSplint(funcParams)
 	template.insertCaseSplint(funcParams)
 	template.insertExpectedSplint(returnType)
-	return template.template
+	return string(*template)
 }
 
 func (template *TestTemplate) insertTestFunctionSplint(funcName string) {
 	m := regexp.MustCompile(testFuncSplint)
-	res := m.ReplaceAllString(template.template, cases.Title(language.English, cases.NoLower).String(funcName))
-	template.template = res
+	res := m.ReplaceAllString(string(*template), cases.Title(language.English, cases.NoLower).String(funcName))
+	*template = TestTemplate(res)
 }
 
 func (template *TestTemplate) insertFunctionSplint(funcName string) {
 	m := regexp.MustCompile(funcSplint)
-	res := m.ReplaceAllString(template.template, funcName)
-	template.template = res
+	res := m.ReplaceAllString(string(*template), funcName)
+	*template = TestTemplate(res)
 }
 
 func (template *TestTemplate) insertCaseSplint(funcParams []FuncParam) {
@@ -150,16 +146,16 @@ func (template *TestTemplate) insertCaseSplint(funcParams []FuncParam) {
 		cnt++
 	}
 	m := regexp.MustCompile(caseSplint)
-	res := m.ReplaceAllString(template.template, sb.String())
-	template.template = res
+	res := m.ReplaceAllString(string(*template), sb.String())
+	*template = TestTemplate(res)
 }
 
 func (template *TestTemplate) insertExpectedSplint(returnType string) {
 	m := regexp.MustCompile(expectedSplint)
 	var sb strings.Builder
 	sb.WriteString("expected " + returnType)
-	res := m.ReplaceAllString(template.template, sb.String())
-	template.template = res
+	res := m.ReplaceAllString(string(*template), sb.String())
+	*template = TestTemplate(res)
 }
 
 func (template *TestTemplate) insertParamsSplint(params []FuncParam) {
@@ -174,8 +170,8 @@ func (template *TestTemplate) insertParamsSplint(params []FuncParam) {
 		}
 		cnt++
 	}
-	res := m.ReplaceAllString(template.template, sb.String())
-	template.template = res
+	res := m.ReplaceAllString(string(*template), sb.String())
+	*template = TestTemplate(res)
 }
 
 // getTestFile used for testing
