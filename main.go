@@ -136,9 +136,7 @@ func (template *TestTemplate) insertCaseSplint(funcParams []FuncParam) {
 	var sb strings.Builder
 	cnt := 0
 	for _, v := range funcParams {
-		if cnt == 0 {
-			sb.WriteString(v.paramName + " " + v.paramType + "\n")
-		} else if cnt < len(funcParams)-1 {
+		if cnt < len(funcParams)-1 {
 			sb.WriteString("\t\t" + v.paramName + " " + v.paramType + "\n")
 		} else {
 			sb.WriteString("\t\t" + v.paramName + " " + v.paramType)
