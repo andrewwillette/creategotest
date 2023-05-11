@@ -28,9 +28,20 @@ func TestGetFuncParamsAst(t *testing.T) {
 }
 
 func TestGetReturnTypeAst(t *testing.T) {
-	fs := token.NewFileSet()
-	file, err := parser.ParseFile(fs, testFile, nil, parser.ParseComments)
-	require.NoError(t, err)
-	returnType := GetReturnType(file)
-	require.Equal(t, "int", returnType)
+	var cases = []struct {
+		testfile string
+		expected string
+	}{
+		{
+			testfile: "./testdata/example_test.go",
+			expected: "int",
+		},
+	}
+	for _, c := range cases {
+		fs := token.NewFileSet()
+		file, err := parser.ParseFile(fs, c.testfile, nil, parser.ParseComments)
+		require.NoError(t, err)
+		returnType := GetReturnType(file)
+		require.Equal(t, c.expected, returnType)
+	}
 }

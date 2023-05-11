@@ -2,9 +2,6 @@ package main
 
 import "go/ast"
 
-// TODO:
-// getReturnType
-// get funcParams
 func GetFuncName(file *ast.File) string {
 	funcName := ""
 	ast.Inspect(file, func(n ast.Node) bool {
