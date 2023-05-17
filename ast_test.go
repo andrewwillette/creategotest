@@ -32,9 +32,13 @@ func TestGetReturnTypeAst(t *testing.T) {
 		testfile string
 		expected string
 	}{
+		// {
+		// 	testfile: "./testdata/example_test.go",
+		// 	expected: "int",
+		// },
 		{
-			testfile: "./testdata/example_test.go",
-			expected: "int",
+			testfile: "./testdata/exampletwo_test.go",
+			expected: "[]int",
 		},
 	}
 	for _, c := range cases {

@@ -21,12 +21,17 @@ func GetFuncParams(file *ast.File) []FuncParam {
 		if ok {
 			// funcName = funcDef.Name.Name
 			for _, v := range funcDef.Type.Params.List {
-				funcParams = append(funcParams,
-					FuncParam{
-						paramName: v.Names[0].Name,
-						paramType: v.Type.(*ast.Ident).Name,
-					},
-				)
+				switch v.Type.(type) {
+				case *ast.Ident:
+					funcParams = append(funcParams,
+						FuncParam{
+							paramName: v.Names[0].Name,
+							paramType: v.Type.(*ast.Ident).Name,
+						},
+					)
+				default:
+					continue
+				}
 			}
 		}
 		return true
@@ -39,7 +44,10 @@ func GetReturnType(file *ast.File) string {
 	ast.Inspect(file, func(n ast.Node) bool {
 		funcDef, ok := n.(*ast.FuncDecl)
 		if ok {
-			returnType = funcDef.Type.Results.List[0].Type.(*ast.Ident).Name
+			switch funcDef.Type.Results.List[0].Type.(type) {
+			case *ast.Ident:
+				returnType = funcDef.Type.Results.List[0].Type.(*ast.Ident).Name
+			}
 		}
 		return true
 	})
