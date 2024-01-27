@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -37,7 +36,7 @@ func Test<testFunctionSplint>(t *testing.T) {
 
 func main() {
 	file := getFileToAppend()
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		panic("failed to read file: " + file)
 	}
